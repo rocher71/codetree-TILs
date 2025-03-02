@@ -201,6 +201,7 @@ pair<int, int> findMedusaRoute(){
             q.push({{nextY, nextX}, {firstY, firstX}});
         }
     }
+    return {-1, -1};
 }
 
 pair<int, int> findSoldierRoute(int fromY, int fromX, bool isFirst){
@@ -275,7 +276,7 @@ int main(){
         // 1. 메두사 이동
         pair<int, int> nextYX = findMedusaRoute();
         // 메두사가 공원까지 갈 수 없다면 -1 출력 후 종료
-        if(nextYX.first == -1){
+        if(nextYX.first == -1 || nextYX.second == -1){
             cout << "-1\n";
             return 0;
         }
