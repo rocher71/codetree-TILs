@@ -84,14 +84,14 @@ void hide(int y, int x, int direction){
 
     if(direction == RIGHT && medusaY > y){
         for(int i = y; i < n; i++){
-            int xStart = i - y <= 1 ? x + 1 : x - (i - y);
+            int xStart = i - y <= 1 ? x + 1 : x + (i - y);
             for(int j = xStart; j < n; j++) sight[i][j] = 2;
         }
         return;
     }
     if(direction == RIGHT && medusaY < y){
         for(int i = y; i >= 0; i--){
-            int xStart = y - i <= 1 ? x + 1 : x + (y - i);
+            int xStart = y - i <= 1 ? x + 1 : x - (y - i);
             for(int j = xStart; j < n; j++) sight[i][j] = 2;
         }
         return;
@@ -303,6 +303,19 @@ int main(){
         int maxDirection = -1, maxStoneCnt = 0;
         for(int i = 0; i< 4; i++){
             int currStoneCnt = lookDirection(i);
+//            cout << "바라보는 방향 : " << i << "\n";
+//            for(int a = 0; a < n;a++){
+//                for(int j = 0; j < n; j++){
+//                    if(a == medusaY && j == medusaX){
+//                        cout << "X ";
+//                        continue;
+//                    }
+//                    cout << sight[a][j] << " ";
+//                }
+//                cout << "\n";
+//            }
+//            cout << "\n";
+
             if(currStoneCnt <= maxStoneCnt) continue; // 상하좌우 순이므로 같아도 continue
             maxDirection = i;
             maxStoneCnt = currStoneCnt;
