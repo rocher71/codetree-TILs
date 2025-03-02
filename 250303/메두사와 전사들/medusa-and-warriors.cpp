@@ -82,16 +82,16 @@ void hide(int y, int x, int direction){
         return;
     }
 
-    if(direction == RIGHT && medusaY > y){
+    if(direction == RIGHT && medusaY < y){
         for(int i = y; i < n; i++){
             int xStart = i - y <= 1 ? x + 1 : x + (i - y);
             for(int j = xStart; j < n; j++) sight[i][j] = 2;
         }
         return;
     }
-    if(direction == RIGHT && medusaY < y){
+    if(direction == RIGHT && medusaY > y){
         for(int i = y; i >= 0; i--){
-            int xStart = y - i <= 1 ? x + 1 : x - (y - i);
+            int xStart = y - i <= 1 ? x + 1 : x + (y - i);
             for(int j = xStart; j < n; j++) sight[i][j] = 2;
         }
         return;
@@ -206,21 +206,23 @@ pair<int, int> findMedusaRoute(){
 
 pair<int, int> findSoldierRoute(int fromY, int fromX, bool isFirst){
     fill(&visit[0][0], &visit[n-1][n], false);
-    queue<pair<pii, pii>> q; // {{fromY, fromX}, {firstY, firstX}}
-    q.push({{fromY, fromX}, {-1, -1}});
+    queue<pair<pii, pair<pii, int>>> q; // {{fromY, fromX}, {{firstY, firstX}, 거리}}
+    q.push({{fromY, fromX}, {{-1, -1}, 0}});
     visit[fromY][fromX] = true;
     //cout << "=======bfs start=========\n시작 좌표 : (" << fromY << ", " << fromX << ")\n";
+    int euclidDist = abs(fromY - medusaY) + abs(fromX - medusaX);
 
     while(!q.empty()){
         int currY = q.front().first.first;
         int currX = q.front().first.second;
-        int firstY = q.front().second.first;
-        int firstX = q.front().second.second;
+        int firstY = q.front().second.first.first;
+        int firstX = q.front().second.first.second;
+        int currDist = q.front().second.second;
         q.pop();
 //        cout << currY << ", " << currX << "\n";
 
         // 길 찾은 경우 첫 좌표 반환
-        if(currY == medusaY && currX == medusaX){
+        if(currY == medusaY && currX == medusaX && currDist == euclidDist){
 //            cout << "return 첫 좌표 : (" << firstY << ", " << firstX << "\n";
             return {firstY, firstX};
         }
@@ -233,15 +235,15 @@ pair<int, int> findSoldierRoute(int fromY, int fromX, bool isFirst){
 
             if(nextY < 0 || nextX < 0 || nextY >= n || nextX >= n) continue;
             if(visit[nextY][nextX]) continue;
-//            if(currY == fromY && currX == fromX && sight[nextY][nextX] == 1) continue;
+            if(currY == fromY && currX == fromX && sight[nextY][nextX] == 1) continue;
 
             visit[nextY][nextX] = true;
             if(firstY == -1){
-                q.push({{nextY, nextX}, {nextY, nextX}});
+                q.push({{nextY, nextX}, {{nextY, nextX}, currDist + 1}});
                 continue;
             }
 
-            q.push({{nextY, nextX}, {firstY, firstX}});
+            q.push({{nextY, nextX}, {{firstY, firstX}, currDist + 1}});
         }
     }
     return {-1, -1};
@@ -352,8 +354,8 @@ int main(){
             auto [nextY, nextX] = findSoldierRoute(currY, currX, true);
             soldierLocs.pop_front();
 
-            // 최단거리가 메두사의 시야일 경우
-            if(sight[nextY][nextX] == 1){
+            // 움직일 수 없거나 최단거리가 메두사의 시야일 경우
+            if(nextY == -1 || sight[nextY][nextX] == 1){
                 soldierLocs.push_back({currY, currX});
                 continue;
             }
@@ -370,7 +372,7 @@ int main(){
 
             // 다시 덱에 넣어줌
             soldierLocs.push_back({nextY, nextX});
-            soldiers[nextY][nextX] = soldiers[currY][currX];
+            soldiers[nextY][nextX] += soldiers[currY][currX];
             soldiers[currY][currX] = 0;
 
         }
@@ -392,11 +394,11 @@ int main(){
             auto [nextY, nextX] = findSoldierRoute(currY, currX, false);
             soldierLocs.pop_front();
 
-            // 최단거리가 메두사의 시야일 경우
-            if(sight[nextY][nextX] == 1) continue;
+            // 움직일 수 없거나 최단거리가 메두사의 시야일 경우
+            if(nextY == -1 || sight[nextY][nextX] == 1) continue;
 
             moveCnt += soldiers[currY][currX];
-            soldiers[nextY][nextX] = soldiers[currY][currX];
+            soldiers[nextY][nextX] += soldiers[currY][currX];
             soldiers[currY][currX] = 0;
 
             // 두번 이동 후 메두사를 못 만난 경우 넘김
