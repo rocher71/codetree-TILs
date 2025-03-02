@@ -12,7 +12,7 @@ typedef pair<int, int> pii;
 int n, m, medusaY, medusaX, parkY, parkX, moveCnt, stoneCnt, defeatCnt, leftSoldierCnt;
 int soldiers[52][52], sight[52][52];
 bool isRoad[52][52], visit[52][52];
-deque<pair<int, int>> soldierLocs;
+deque<pair<pii, int>> soldierLocs;
 int dy[4] = {-1, 1, 0, 0}, dx[4] = {0, 0, -1, 1};
 
 bool isInRange(int y, int x){
@@ -67,14 +67,14 @@ void hide(int y, int x, int direction){
         return;
     }
 
-    if(direction == LEFT && medusaY > y){
+    if(direction == LEFT && medusaY < y){
         for(int i = y; i < n; i++){
             int xStart = i - y <= 1 ? x - 1 : x - (i - y);
             for(int j = xStart; j >= 0; j--) sight[i][j] = 2;
         }
         return;
     }
-    if(direction == LEFT && medusaY < y){
+    if(direction == LEFT && medusaY > y){
         for(int i = y; i >= 0; i--){
             int xStart = y - i <= 1 ? x - 1 : x - (y - i);
             for(int j = xStart; j >= 0; j--) sight[i][j] = 2;
@@ -340,7 +340,7 @@ int main(){
 
         for(int i = 0; i < n;i++){
             for(int j = 0; j < n; j++) {
-                if(soldiers[i][j] != 0 && sight[i][j] != 1) soldierLocs.push_back({i, j});
+                if(soldiers[i][j] != 0 && sight[i][j] != 1) soldierLocs.push_back({{i, j}, soldiers[i][j]});
             }
         }
 
@@ -348,32 +348,33 @@ int main(){
         int soldierCnt = soldierLocs.size();
         // 첫번째 이동
         for(int i = 0 ; i< soldierCnt; i++){
-            int currY = soldierLocs.front().first;
-            int currX = soldierLocs.front().second;
+            int currY = soldierLocs.front().first.first;
+            int currX = soldierLocs.front().first.second;
+            int cnt = soldierLocs.front().second;
 
             auto [nextY, nextX] = findSoldierRoute(currY, currX, true);
             soldierLocs.pop_front();
 
             // 움직일 수 없거나 최단거리가 메두사의 시야일 경우
             if(nextY == -1 || sight[nextY][nextX] == 1){
-                soldierLocs.push_back({currY, currX});
+                soldierLocs.push_back({{currY, currX}, cnt});
                 continue;
             }
 
-            moveCnt += soldiers[currY][currX];
+            moveCnt += cnt;
 
             // 가는 도중 메두사를 만난 경우 잡아먹힘
             if(nextY == medusaY && nextX == medusaX){
-                defeatCnt += soldiers[currY][currX];
-                leftSoldierCnt -= soldiers[currY][currX];
-                soldiers[currY][currX] = 0;
+                defeatCnt += cnt;
+                leftSoldierCnt -= cnt;
+                soldiers[currY][currX] -= cnt;
                 continue;
             }
 
             // 다시 덱에 넣어줌
-            soldierLocs.push_back({nextY, nextX});
-            soldiers[nextY][nextX] += soldiers[currY][currX];
-            soldiers[currY][currX] = 0;
+            soldierLocs.push_back({{nextY, nextX}, cnt});
+            soldiers[nextY][nextX] +=  cnt;
+            soldiers[currY][currX] -= cnt;
 
         }
 
@@ -388,8 +389,9 @@ int main(){
 
         // 두번째 이동
         while(!soldierLocs.empty()){
-            int currY = soldierLocs.front().first;
-            int currX = soldierLocs.front().second;
+            int currY = soldierLocs.front().first.first;
+            int currX = soldierLocs.front().first.second;
+            int cnt = soldierLocs.front().second;
 
             auto [nextY, nextX] = findSoldierRoute(currY, currX, false);
             soldierLocs.pop_front();
@@ -397,17 +399,17 @@ int main(){
             // 움직일 수 없거나 최단거리가 메두사의 시야일 경우
             if(nextY == -1 || sight[nextY][nextX] == 1) continue;
 
-            moveCnt += soldiers[currY][currX];
-            soldiers[nextY][nextX] += soldiers[currY][currX];
-            soldiers[currY][currX] = 0;
+            moveCnt += cnt;
+            soldiers[nextY][nextX] += cnt;
+            soldiers[currY][currX] -= cnt;
 
             // 두번 이동 후 메두사를 못 만난 경우 넘김
             if(nextY != medusaY || nextX != medusaX) continue;
 
             // 가는 도중 메두사를 만난 경우 값 저장
-            defeatCnt += soldiers[nextY][nextX];
-            leftSoldierCnt -= soldiers[nextY][nextX];
-            soldiers[nextY][nextX] = 0;
+            defeatCnt += cnt;
+            leftSoldierCnt -= cnt;
+            soldiers[nextY][nextX] -= cnt;
         }
 //        cout << "두 번째 전사들 이동 결과\n";
 //        for(int i = 0; i < n;i++){
