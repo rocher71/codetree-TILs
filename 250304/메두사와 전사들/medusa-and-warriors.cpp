@@ -127,7 +127,7 @@ int lookDirection(int direction) {
 	return currStoneCnt;
 }
 
-/*
+/* // 매 턴마다 메두사의 루트를 찾는 함수
 pair<int, int> findMedusaRoute() {
 	fill(&visit[0][0], &visit[n - 1][n], false);
 	pii prevRoute[52][52];
@@ -170,6 +170,7 @@ pair<int, int> findMedusaRoute() {
 }
 */
 
+// 맨 처음에 메두사의 
 void findMedusaRoute() {
 	fill(&visit[0][0], &visit[n - 1][n], false);
 	pii prevRoute[52][52];
@@ -287,7 +288,7 @@ int main() {
 			else isRoad[i][j] = false;
 		}
 	}
-
+	findMedusaRoute();
 	// 메두사가 공원에 도착할 때 까지 반복
 	while (!(medusaY == parkY && medusaX == parkX)) {
 		moveCnt = 0;
@@ -296,7 +297,7 @@ int main() {
 
 		// 1. 메두사 이동
 		//pair<int, int> nextYX = findMedusaRoute();
-		findMedusaRoute();
+		
 		// 메두사가 공원까지 갈 수 없다면 -1 출력 후 종료
 		if (medusaRoute.empty()) {
 			cout << "-1\n";
