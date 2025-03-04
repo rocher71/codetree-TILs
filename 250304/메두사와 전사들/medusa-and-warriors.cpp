@@ -305,6 +305,7 @@ int main() {
 		int maxDirection = -1, maxStoneCnt = 0;
 		for (int i = 0; i < 4; i++) {
 			int currStoneCnt = lookDirection(i);
+			
 			/*
 			cout << "바라보는 방향 : " << i << "\n";
 			for(int a = 0; a < n;a++){
@@ -326,19 +327,20 @@ int main() {
 
 		// 최대 방향으로 sight 배열 설정
 		stoneCnt = lookDirection(maxDirection);
-		//        cout << "바라보는 방향 : " << maxDirection << "\n";
-		//        for(int i = 0; i < n;i++){
-		//            for(int j = 0; j < n; j++){
-		//                if(i == medusaY && j == medusaX){
-		//                    cout << "X ";
-		//                    continue;
-		//                }
-		//                cout << sight[i][j] << " ";
-		//            }
-		//            cout << "\n";
-		//        }
-		//        cout << "\n";
-
+		/*
+		        cout << "바라보는 방향 : " << maxDirection << "\n";
+		        for(int i = 0; i < n;i++){
+		            for(int j = 0; j < n; j++){
+		                if(i == medusaY && j == medusaX){
+		                    cout << "X ";
+		                    continue;
+		                }
+		                cout << sight[i][j] << " ";
+		            }
+		            cout << "\n";
+		        }
+		        cout << "\n";
+			*/
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
 				if (soldiers[i][j] != 0 && sight[i][j] != 1) soldierLocs.push_back({ {i, j}, soldiers[i][j] });
@@ -380,15 +382,16 @@ int main() {
 			soldiers[currY][currX] -= cnt;
 
 		}
-
-		//        cout << "첫 번째 전사들 이동 결과\n";
-		//        for(int i = 0; i < n;i++){
-		//            for(int j = 0; j < n; j++){
-		//                cout << soldiers[i][j] << " ";
-		//            }
-		//            cout << "\n";
-		//        }
-		//        cout << "\n";
+		/*
+		        cout << "첫 번째 전사들 이동 결과\n";
+		        for(int i = 0; i < n;i++){
+		            for(int j = 0; j < n; j++){
+		                cout << soldiers[i][j] << " ";
+		            }
+		            cout << "\n";
+		        }
+		        cout << "\n";
+				*/
 
 				// 두번째 이동
 		while (!soldierLocs.empty()) {
@@ -396,7 +399,7 @@ int main() {
 			int currX = soldierLocs.front().first.second;
 			int cnt = soldierLocs.front().second;
 
-			pii result = findSoldierRoute(currY, currX, true);
+			pii result = findSoldierRoute(currY, currX, false);
 			int nextY = result.first;
 			int nextX = result.second;
 			soldierLocs.pop_front();
@@ -416,15 +419,16 @@ int main() {
 			leftSoldierCnt -= cnt;
 			soldiers[nextY][nextX] -= cnt;
 		}
-		//        cout << "두 번째 전사들 이동 결과\n";
-		//        for(int i = 0; i < n;i++){
-		//            for(int j = 0; j < n; j++){
-		//                cout << soldiers[i][j] << " ";
-		//            }
-		//            cout << "\n";
-		//        }
-		//        cout << "\n";
-
+		/*
+		        cout << "두 번째 전사들 이동 결과\n";
+		        for(int i = 0; i < n;i++){
+		            for(int j = 0; j < n; j++){
+		                cout << soldiers[i][j] << " ";
+		            }
+		            cout << "\n";
+		        }
+		        cout << "\n";
+				*/
 		cout << moveCnt << " " << stoneCnt << " " << defeatCnt << "\n";
 
 	}
