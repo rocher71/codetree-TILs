@@ -13,6 +13,9 @@ int n, m, medusaY, medusaX, parkY, parkX, moveCnt, stoneCnt, defeatCnt, leftSold
 int soldiers[52][52], sight[52][52];
 bool isRoad[52][52], visit[52][52];
 deque<pair<pii, int>> soldierLocs;
+deque<pii> medusaRoute;
+// 매 턴마다 {{y, x}, 현 좌표에 있는 병사 수} 미리 돌며 넣어주기.
+// 병사가 이동하며 좌표가 겹칠 수 있기 때문에 cnt 값 따로 관리 해줘야함
 int dy[4] = { -1, 1, 0, 0 }, dx[4] = { 0, 0, -1, 1 };
 
 bool isInRange(int y, int x) {
@@ -122,50 +125,12 @@ int lookDirection(int direction) {
 		}
 	}
 	return currStoneCnt;
-
-	// 상하 방향
-//    if(direction == 2 || direction == 3){
-//        for(int i = 1; i <= n; i++){
-//            for(int j = i * -1; j <= i; j++){
-//                int nextY = medusaY + i * dy[direction];
-//                int nextX = medusaX + j;
-//
-//                if(!isInRange(nextY, nextX)) continue;
-//                if(sight[nextY][nextX] == 2) continue; // 이미 가려진 곳이면 Pass
-//
-//                sight[nextY][nextX] = 1; // 메두사 시야 표시
-//                if(soldiers[nextY][nextX] == 0) continue;
-//
-//                // 가려지지 않았고, 전사가 있는 경우 -> 돌 됨
-//                 currStoneCnt += soldiers[nextY][nextX];
-//                hide(nextY, nextX, direction);
-//            }
-//        }
-//        return currStoneCnt;
-//    }
-//
-//    // 좌우 방향
-//    for(int j = 1; j <= n; j++){
-//        for(int i = j * -1; i <= j; i++){
-//            int nextY = medusaY + i;
-//            int nextX = medusaX + i * direction;
-//
-//            if(!isInRange(nextY, nextX)) continue;
-//            if(sight[nextY][nextX] == 2) continue;
-//
-//            sight[nextY][nextX] = 1;
-//            if(soldiers[nextY][nextX] == 0) continue;
-//
-//            // 가려지지 않았고, 전사가 있는 경우 -> 돌 됨
-//            currStoneCnt += soldiers[nextY][nextX];
-//            hide(nextY, nextX, direction);
-//        }
-//    }
-//    return currStoneCnt;
 }
 
+/*
 pair<int, int> findMedusaRoute() {
 	fill(&visit[0][0], &visit[n - 1][n], false);
+	pii prevRoute[52][52];
 	queue<pair<pii, pii>> q; // {{nextY, nextX}, {firstY, firstX}}
 	q.push({ {medusaY, medusaX}, {-1, -1} });
 	visit[medusaY][medusaX] = true;
@@ -177,11 +142,11 @@ pair<int, int> findMedusaRoute() {
 		int firstY = q.front().second.first;
 		int firstX = q.front().second.second;
 		q.pop();
-		//        cout << currY << ", " << currX << "\n";
+		//cout << currY << ", " << currX << "\n";
 
-				// 길 찾은 경우 첫 좌표 반환
+		// 길 찾은 경우 첫 좌표 반환
 		if (currY == parkY && currX == parkX) {
-			//            cout << "return 첫 좌표 : (" << firstY << ", " << firstX << "\n";
+			//cout << "return 첫 좌표 : (" << firstY << ", " << firstX << "\n";
 			return { firstY, firstX };
 		}
 
@@ -203,6 +168,51 @@ pair<int, int> findMedusaRoute() {
 	}
 	return { -1, -1 };
 }
+*/
+
+void findMedusaRoute() {
+	fill(&visit[0][0], &visit[n - 1][n], false);
+	pii prevRoute[52][52];
+	queue<pii> q; // 
+	q.push({ medusaY, medusaX });
+	visit[medusaY][medusaX] = true;
+	//cout << "=======bfs start=========\n시작 좌표 : (" << medusaY << ", " << medusaX << ")\n";
+
+	while (!q.empty()) {
+		int currY = q.front().first;
+		int currX = q.front().second;
+		q.pop();
+		//cout << currY << ", " << currX << "\n";
+
+		// 길 찾은 경우 첫 좌표 반환
+		if (currY == parkY && currX == parkX) {
+			medusaRoute.push_front({ currY, currX });
+			
+			int prevY = prevRoute[currY][currX].first;
+			int prevX = prevRoute[currY][currX].second;
+			while (prevY != medusaY || prevX != medusaX) {
+				medusaRoute.push_front({ prevY, prevX });
+				prevY = prevRoute[medusaRoute.front().first][medusaRoute.front().second].first;
+				prevX = prevRoute[medusaRoute.front().first][medusaRoute.front().second].second;
+			}
+			return;
+		}
+
+		for (int i = 0; i < 4; i++) {
+			int nextY = currY + dy[i];
+			int nextX = currX + dx[i];
+
+			if (nextY < 0 || nextX < 0 || nextY >= n || nextX >= n) continue;
+			if (!isRoad[nextY][nextX] || visit[nextY][nextX]) continue;
+
+			visit[nextY][nextX] = true;
+			prevRoute[nextY][nextX] = { currY, currX };
+			q.push({nextY, nextX});
+		}
+	}
+	return;
+	
+}
 
 pair<int, int> findSoldierRoute(int fromY, int fromX, bool isFirst) {
 	fill(&visit[0][0], &visit[n - 1][n], false);
@@ -219,25 +229,29 @@ pair<int, int> findSoldierRoute(int fromY, int fromX, bool isFirst) {
 		int firstX = q.front().second.first.second;
 		int currDist = q.front().second.second;
 		q.pop();
-		//        cout << currY << ", " << currX << "\n";
+		//cout << currY << ", " << currX << "\n";
 
-				// 길 찾은 경우 첫 좌표 반환
+		// 길 찾은 경우 첫 좌표 반환
 		if (currY == medusaY && currX == medusaX && currDist == euclidDist) {
-			//            cout << "return 첫 좌표 : (" << firstY << ", " << firstX << "\n";
+			//cout << "return 첫 좌표 : (" << firstY << ", " << firstX << "\n";
 			return { firstY, firstX };
 		}
 
-		int from = isFirst ? 0 : 2;
-		int till = isFirst ? 3 : 5;
+		int from = isFirst ? 0 : 2; // 첫번재 이동은 상하좌우 순
+		int till = isFirst ? 3 : 5; // 두번째 이동은 좌우상하 순
 		for (int i = from; i <= till; i++) {
 			int nextY = currY + dy[i % 4];
 			int nextX = currX + dx[i % 4];
 
-			if (nextY < 0 || nextX < 0 || nextY >= n || nextX >= n) continue;
+			if (!isInRange(nextY, nextX)) continue;
 			if (visit[nextY][nextX]) continue;
+			// 이동할 첫번째 칸이 메두사의 시야라면 갈 수 없음, 
+			// 그 이후 칸들은 메두사의 시야여도 됨
 			if (currY == fromY && currX == fromX && sight[nextY][nextX] == 1) continue;
 
 			visit[nextY][nextX] = true;
+
+			// 첫 칸 설정
 			if (firstY == -1) {
 				q.push({ {nextY, nextX}, {{nextY, nextX}, currDist + 1} });
 				continue;
@@ -246,14 +260,15 @@ pair<int, int> findSoldierRoute(int fromY, int fromX, bool isFirst) {
 			q.push({ {nextY, nextX}, {{firstY, firstX}, currDist + 1} });
 		}
 	}
+
+	// 이동할 수 없는 경우
 	return { -1, -1 };
 }
 
 int main() {
-    	ios::sync_with_stdio(0);
+	ios::sync_with_stdio(0);
 	cin.tie(nullptr);
 	cout.tie(nullptr);
-    
 	cin >> n >> m;
 	cin >> medusaY >> medusaX >> parkY >> parkX;
 	leftSoldierCnt = m;
@@ -280,20 +295,26 @@ int main() {
 		defeatCnt = 0;
 
 		// 1. 메두사 이동
-		pair<int, int> nextYX = findMedusaRoute();
+		//pair<int, int> nextYX = findMedusaRoute();
+		findMedusaRoute();
 		// 메두사가 공원까지 갈 수 없다면 -1 출력 후 종료
-		if (nextYX.first == -1 || nextYX.second == -1) {
+		if (medusaRoute.empty()) {
 			cout << "-1\n";
 			return 0;
 		}
+		
+		pii nextYX = medusaRoute.front();
+		medusaY = nextYX.first;
+		medusaX = nextYX.second;
+		medusaRoute.pop_front();
 		// 공원 도착 시 0 출력 후 종료
-		if (nextYX.first == parkY && nextYX.second == parkX) {
+		if (medusaY == parkY && medusaX == parkX) {
 			cout << "0\n";
 			return 0;
 		}
-		medusaY = nextYX.first;
-		medusaX = nextYX.second;
+		
 
+		// 메두사가 이동한 칸에 전사가 있다면 죽음
 		if (soldiers[medusaY][medusaX] != 0) {
 			leftSoldierCnt -= soldiers[medusaY][medusaX];
 			soldiers[medusaY][medusaX] = 0;
@@ -328,7 +349,6 @@ int main() {
 			maxDirection = i;
 			maxStoneCnt = currStoneCnt;
 		}
-
 		// 최대 방향으로 sight 배열 설정
 		stoneCnt = lookDirection(maxDirection);
 		/*
@@ -345,13 +365,15 @@ int main() {
 		        }
 		        cout << "\n";
 			*/
+		
+		
+		// 3. 전사 이동
 		for (int i = 0; i < n; i++) {
 			for (int j = 0; j < n; j++) {
 				if (soldiers[i][j] != 0 && sight[i][j] != 1) soldierLocs.push_back({ {i, j}, soldiers[i][j] });
 			}
 		}
-
-		// 3. 전사 이동
+		
 		int soldierCnt = soldierLocs.size();
 		// 첫번째 이동
 		for (int i = 0; i < soldierCnt; i++) {
@@ -371,20 +393,18 @@ int main() {
 			}
 
 			moveCnt += cnt;
+			soldiers[currY][currX] -= cnt;
 
-			// 가는 도중 메두사를 만난 경우 잡아먹힘
+			// 가는 도중 메두사를 만난 경우 defeatCnt에 더해주기
 			if (nextY == medusaY && nextX == medusaX) {
 				defeatCnt += cnt;
 				leftSoldierCnt -= cnt;
-				soldiers[currY][currX] -= cnt;
 				continue;
 			}
 
 			// 다시 덱에 넣어줌
 			soldierLocs.push_back({ {nextY, nextX}, cnt });
 			soldiers[nextY][nextX] += cnt;
-			soldiers[currY][currX] -= cnt;
-
 		}
 		/*
 		        cout << "첫 번째 전사들 이동 결과\n";
