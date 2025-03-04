@@ -250,6 +250,10 @@ pair<int, int> findSoldierRoute(int fromY, int fromX, bool isFirst) {
 }
 
 int main() {
+    	ios::sync_with_stdio(0);
+	cin.tie(nullptr);
+	cout.tie(nullptr);
+    
 	cin >> n >> m;
 	cin >> medusaY >> medusaX >> parkY >> parkX;
 	leftSoldierCnt = m;
